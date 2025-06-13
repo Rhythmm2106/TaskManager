@@ -1,4 +1,3 @@
-// src/app/StudyBuddy/page.js
 'use client';
 import React, { useState } from 'react';
 import AppBars from '../components/AppBars';
@@ -11,7 +10,7 @@ import useTaskStorage from '../hooks/useTaskStorage';
 export default function StudyBuddyPage() {
   const [editingTask, setEditingTask] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  
+
   const {
     tasks,
     addTask,
@@ -40,26 +39,30 @@ export default function StudyBuddyPage() {
 
   return (
     <RequireAuth>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[#f4faee]"> {/* light pistachio background */}
         <AppBars />
-        
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto">
+
+        <div className="container mx-auto px-4 py-10">
+          <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-2xl p-8 border border-[#d9f1d1]">
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Task Management</h1>
-              <p className="text-gray-600">
-                Welcome back, {user?.email}! Manage your tasks efficiently.
+              <h1 className="text-4xl font-bold text-[#3b7b4f] mb-2">Study Buddy</h1>
+              <p className="text-[#789262]">
+                Welcome back, <span className="font-semibold">{user?.email}</span>! Manage your tasks efficiently.
               </p>
             </div>
 
-            <TaskForm onAddTask={addTask} />
-            
-            <TaskList
-              tasks={tasks}
-              onToggleComplete={toggleTaskComplete}
-              onDeleteTask={handleDeleteTask}
-              onEditTask={handleEditTask}
-            />
+            <div className="mb-6">
+              <TaskForm onAddTask={addTask} />
+            </div>
+
+            <div className="mb-6">
+              <TaskList
+                tasks={tasks}
+                onToggleComplete={toggleTaskComplete}
+                onDeleteTask={handleDeleteTask}
+                onEditTask={handleEditTask}
+              />
+            </div>
 
             <EditTaskModal
               task={editingTask}

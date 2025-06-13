@@ -1,22 +1,17 @@
-'use client'
+'use client';
 import { useState, useEffect } from 'react';
-import { getAuth, signOut, onAuthStateChanged } from 'firebase/auth';
-import { initializeApp } from 'firebase/app'; // Correct import
-import {app} from '../firebase-config'; // Import your config
+import { signOut, onAuthStateChanged, getAuth } from 'firebase/auth';
+import { initializeApp } from 'firebase/app';
+import { app } from '../firebase-config';
 
-
-// Initialize Firebase
-let firebaseApp; // Declare outside to use it later
-
+let firebaseApp;
 try {
   firebaseApp = initializeApp(app);
 } catch (error) {
-  // Ignore "already exists" error.  Important for Next.js.
   if (!error.message.includes("Firebase: Firebase App named '[DEFAULT]' already exists")) {
-    console.error("Firebase initialization error:", error);
+    console.error("Firebase init error:", error);
   }
 }
-
 
 const SignOutPage = () => {
   const [user, setUser] = useState(null);
@@ -24,7 +19,7 @@ const SignOutPage = () => {
   const [signedOut, setSignedOut] = useState(false);
 
   useEffect(() => {
-    const auth = getAuth(firebaseApp); // Pass the app instance
+    const auth = getAuth(firebaseApp);
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
@@ -34,71 +29,35 @@ const SignOutPage = () => {
   }, []);
 
   const handleSignOut = () => {
-    const auth = getAuth(firebaseApp); // Pass the app instance
+    const auth = getAuth(firebaseApp);
     signOut(auth)
-      .then(() => {
-        setSignedOut(true);
-      })
-      .catch((error) => {
-        console.error("Error signing out:", error);
-      });
+      .then(() => setSignedOut(true))
+      .catch((error) => console.error("Error signing out:", error));
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  if (loading) return <div className="text-center py-10 text-yellow-600">Loading...</div>;
 
-  if (signedOut) {
-    return (
-      <div style={styles.container}>
-        <p style={styles.paragraph}>You have been signed out.</p>
-      </div>
-    );
-  }
-
-  if (user) {
-    return (
-      <div style={styles.container}>
-        <p style={styles.paragraph}>
-          You are currently signed in as {user.email}.
-        </p>
-        <button onClick={handleSignOut} style={styles.button}>Sign Out</button>
-      </div>
-    );
-  } else {
-    return (
-      <div style={styles.container}>
-        <p style={styles.paragraph}>You are not signed in.</p>
-      </div>
-    );
-  }
-};
-
-const styles = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '20px',
-    maxWidth: '400px',
-    margin: '0 auto',
-    textAlign: 'center'
-  },
-  paragraph: {
-    marginBottom: '20px',
-    fontSize: '16px'
-  },
-  button: {
-    backgroundColor: '#007bff',
-    color: 'white',
-    padding: '10px 15px',
-    border: 'none',
-    borderRadius: '3px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    marginTop: '10px'
-  },
+  return (
+    <div className="flex flex-col items-center justify-center py-10 px-6 max-w-md mx-auto bg-yellow-50 rounded-lg shadow-md text-center">
+      {signedOut ? (
+        <p className="text-green-600 font-medium">You have been signed out.</p>
+      ) : user ? (
+        <>
+          <p className="mb-4 text-yellow-800">
+            You are signed in as <strong>{user.email}</strong>.
+          </p>
+          <button
+            onClick={handleSignOut}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+          >
+            Sign Out
+          </button>
+        </>
+      ) : (
+        <p className="text-gray-600">You are not signed in.</p>
+      )}
+    </div>
+  );
 };
 
 export default SignOutPage;

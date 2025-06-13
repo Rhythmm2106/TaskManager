@@ -1,131 +1,79 @@
-'use client'
-import { useState } from 'react';
+'use client';
+import { useState, useEffect } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { initializeApp } from 'firebase/app';
-import { auth, app } from '../firebase-config';
-
-
+import { useRouter } from 'next/navigation';
+import { auth } from '../firebase-config';
 
 export default function SignInPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isSignedIn, setIsSignedIn] = useState(false); // Track sign-in state
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const router = useRouter();
 
-
-
-  const handleSignIn = async (event) => {
-    event.preventDefault();
+  const handleSignIn = async (e) => {
+    e.preventDefault();
     setError('');
-
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      setIsSignedIn(true); // Set state upon successful sign-in
-    } catch (error) {
-      console.error('Sign in failed:', error);
-      setError(getErrorMessage(error.code));
+      setIsSignedIn(true);
+      setSuccessMessage('Sign in successful! Redirecting...');
+    } catch (err) {
+      setError(getErrorMessage(err.code));
     }
   };
 
-  const getErrorMessage = (errorCode) => {
-      switch (errorCode) {
-        case 'auth/user-not-found':
-            return 'No user found with that email.';
-        case 'auth/wrong-password':
-            return 'Incorrect password.';
-         case 'auth/invalid-email':
-            return 'Invalid email address.';
-        default:
-            return 'An error occurred during sign in. Please try again.';
-      }
+  useEffect(() => {
+    if (isSignedIn) {
+      const timeout = setTimeout(() => router.push('/StudyBuddy'), 1000);
+      return () => clearTimeout(timeout);
+    }
+  }, [isSignedIn, router]);
+
+  const getErrorMessage = (code) => {
+    switch (code) {
+      case 'auth/user-not-found': return 'No user found with this email.';
+      case 'auth/wrong-password': return 'Incorrect password.';
+      case 'auth/invalid-email': return 'Invalid email address.';
+      default: return 'Something went wrong. Please try again.';
+    }
   };
 
-  if (isSignedIn) {
-    return (
-      <div style={styles.container}>
-        <h1>Welcome!</h1>
-        <p>You are now signed in.</p>
-        {/* You'd likely want to render your main application content here. */}
-      </div>
-    );
-  }
-
   return (
-    <div style={styles.container}>
-      <h1>Sign In</h1>
-      {error && <p style={styles.error}>{error}</p>}
-      <form onSubmit={handleSignIn} style={styles.form}>
-        <div style={styles.inputGroup}>
-          <label htmlFor="email" style={styles.label}>Email:</label>
+    <div className="flex flex-col items-center p-6 max-w-md mx-auto bg-yellow-50 rounded-lg shadow-lg">
+      <h1 className="text-3xl font-bold text-green-700 mb-4">Sign In</h1>
+
+      {error && <p className="text-red-500 mb-3">{error}</p>}
+      {isSignedIn && <p className="text-green-600 mb-3">{successMessage}</p>}
+
+      <form onSubmit={handleSignIn} className="w-full bg-white rounded-md p-6 shadow space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-yellow-700">Email:</label>
           <input
             type="email"
-            id="email"
+            required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            style={styles.input}
-            required
+            className="mt-1 w-full px-3 py-2 border border-yellow-400 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
           />
         </div>
-        <div style={styles.inputGroup}>
-          <label htmlFor="password" style={styles.label}>Password:</label>
+
+        <div>
+          <label className="block text-sm font-medium text-yellow-700">Password:</label>
           <input
             type="password"
-            id="password"
+            required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            style={styles.input}
-            required
+            className="mt-1 w-full px-3 py-2 border border-yellow-400 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
           />
         </div>
-        <button type="submit" style={styles.button}>Sign In</button>
+
+        <button type="submit" className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition">
+          Sign In
+        </button>
       </form>
     </div>
   );
 }
-
-const styles = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    padding: '20px',
-    maxWidth: '400px',
-    margin: '0 auto',
-  },
-  form: {
-    width: '100%',
-    marginTop: '20px',
-    padding: '20px',
-    border: '1px solid #ccc',
-    borderRadius: '5px',
-    backgroundColor: '#f9f9f9',
-  },
-  inputGroup: {
-    marginBottom: '15px',
-  },
-  label: {
-    display: 'block',
-    marginBottom: '5px',
-    fontWeight: 'bold',
-  },
-  input: {
-    width: '100%',
-    padding: '10px',
-    border: '1px solid #ddd',
-    borderRadius: '3px',
-    fontSize: '16px',
-  },
-  button: {
-    backgroundColor: '#007bff',
-    color: 'white',
-    padding: '10px 15px',
-    border: 'none',
-    borderRadius: '3px',
-    cursor: 'pointer',
-    fontSize: '16px',
-  },
-  error: {
-    color: 'red',
-    marginBottom: '10px',
-  },
-};
